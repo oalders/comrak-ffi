@@ -1,0 +1,12 @@
+[package]
+name = "comrak-ffi"
+version = "0.1.0"
+edition = "2021"
+description = "Thin C FFI wrapper around comrak for GFM markdown rendering"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+comrak = "0.37"
