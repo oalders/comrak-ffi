@@ -27,8 +27,8 @@ pub extern "C" fn comrak_markdown_to_html(
     options.extension.strikethrough = true;
     options.extension.autolink = true;
     options.extension.tagfilter = true;
-    options.extension.header_ids = Some(String::new());
-    options.render.unsafe_ = unsafe_html != 0;
+    options.extension.header_id_prefix = String::new();
+    options.render.r#unsafe = unsafe_html != 0;
 
     let html = markdown_to_html(markdown, &options);
     CString::new(html).unwrap().into_raw()
