@@ -17,7 +17,7 @@ Thin C FFI wrapper around [comrak](https://github.com/kivikakk/comrak) for GFM m
 char* comrak_markdown_to_html(const char* markdown, int unsafe_html);
 ```
 
-Renders a markdown string to HTML. When `unsafe_html` is non-zero, raw HTML in the input is passed through. When zero, raw HTML is omitted and dangerous link URLs (e.g. `javascript:`) are dropped. With `unsafe_html` non-zero the output is not sanitized: raw HTML and link URLs are passed through unfiltered, so run it through an HTML sanitizer that also restricts URL schemes before serving untrusted input.
+Renders a markdown string to HTML. When `unsafe_html` is non-zero, raw HTML in the input is passed through. When zero, raw HTML is omitted and dangerous link and image URLs are blanked (e.g. a `javascript:` href becomes `href=""`). With `unsafe_html` non-zero the output is not sanitized: raw HTML and link and image URLs are passed through unfiltered, so run it through an HTML sanitizer that also restricts URL schemes before serving untrusted input.
 
 Returns a newly allocated string. The caller **must** free it with `comrak_free_string`.
 

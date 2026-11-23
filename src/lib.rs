@@ -9,10 +9,11 @@ use comrak::{markdown_to_html, Options};
 /// # Arguments
 /// * `markdown` - A null-terminated C string containing the markdown input.
 /// * `unsafe_html` - If non-zero, raw HTML in the markdown is passed through
-///                   and link URLs are kept unfiltered (no scheme check), so
-///                   sanitize the output before serving untrusted input.
-///                   If zero, raw HTML is omitted and dangerous link URLs
-///                   (e.g. `javascript:`) are dropped.
+///                   and link and image URLs are kept unfiltered (no scheme
+///                   check), so sanitize the output before serving untrusted
+///                   input. If zero, raw HTML is omitted and dangerous link and
+///                   image URLs are blanked (e.g. a `javascript:` href becomes
+///                   `href=""`).
 ///
 /// # Returns
 /// A newly allocated null-terminated C string containing the rendered HTML.
@@ -76,11 +77,13 @@ mod tests {
     }
 
     #[test]
-    fn unsafe_html_controls_raw_html() {
-        let markdown = "<script>alert(1)</script>\n";
+    fn unsafe_html_controls_raw_html_and_urls() {
+        let markdown = "<script>alert(1)</script>\n\n[x](javascript:alert(1))\n";
         let safe = render(markdown, 0);
         assert!(!safe.contains("<script>"), "{safe}");
+        assert!(!safe.contains("javascript:"), "{safe}");
         let raw = render(markdown, 1);
         assert!(raw.contains("<script>alert(1)</script>"), "{raw}");
+        assert!(raw.contains("href=\"javascript:alert(1)\""), "{raw}");
     }
 }
