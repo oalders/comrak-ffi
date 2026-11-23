@@ -8,8 +8,11 @@ use comrak::{markdown_to_html, Options};
 ///
 /// # Arguments
 /// * `markdown` - A null-terminated C string containing the markdown input.
-/// * `unsafe_html` - If non-zero, raw HTML in the markdown is passed through.
-///                   If zero, raw HTML is omitted from the output.
+/// * `unsafe_html` - If non-zero, raw HTML in the markdown is passed through
+///                   and link URLs are kept unfiltered (no scheme check), so
+///                   sanitize the output before serving untrusted input.
+///                   If zero, raw HTML is omitted and dangerous link URLs
+///                   (e.g. `javascript:`) are dropped.
 ///
 /// # Returns
 /// A newly allocated null-terminated C string containing the rendered HTML.
