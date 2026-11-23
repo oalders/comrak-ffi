@@ -32,7 +32,7 @@ Frees a string returned by `comrak_markdown_to_html`.
 ## Building
 
 ```
-cargo build --release
+cargo build --release --locked
 ```
 
 The shared library is written to `target/release/libcomrak_ffi.so` (Linux), `target/release/libcomrak_ffi.dylib` (macOS), or `target/release/comrak_ffi.dll` (Windows).
