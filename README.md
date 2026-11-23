@@ -7,7 +7,6 @@ Thin C FFI wrapper around [comrak](https://github.com/kivikakk/comrak) for GFM m
 - Tables
 - Strikethrough
 - Autolinks
-- Tagfilter
 - Header IDs (no prefix)
 
 ## API
@@ -18,7 +17,7 @@ Thin C FFI wrapper around [comrak](https://github.com/kivikakk/comrak) for GFM m
 char* comrak_markdown_to_html(const char* markdown, int unsafe_html);
 ```
 
-Renders a markdown string to HTML. When `unsafe_html` is non-zero, raw HTML in the input is passed through. When zero, raw HTML is stripped.
+Renders a markdown string to HTML. When `unsafe_html` is non-zero, raw HTML in the input is passed through. When zero, raw HTML is omitted. With `unsafe_html` non-zero the output is not sanitized, so run it through an HTML sanitizer before serving untrusted input.
 
 Returns a newly allocated string. The caller **must** free it with `comrak_free_string`.
 
