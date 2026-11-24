@@ -37,6 +37,20 @@ cargo build --release --locked
 
 The shared library is written to `target/release/libcomrak_ffi.so` (Linux), `target/release/libcomrak_ffi.dylib` (macOS), or `target/release/comrak_ffi.dll` (Windows).
 
+## Verifying Releases
+
+Each release library has a signed build provenance attestation:
+
+```
+gh attestation verify <file> --repo oalders/comrak-ffi --signer-workflow oalders/comrak-ffi/.github/workflows/release.yml
+```
+
+Checksums are published as the `SHA256SUMS` release asset. Download it next to your files and run:
+
+```
+sha256sum -c --ignore-missing SHA256SUMS
+```
+
 ## Usage from Perl
 
 ```perl

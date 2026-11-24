@@ -37,7 +37,7 @@ jobs:
       - name: Check tag matches Cargo.toml version
         run: |
           version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
-          [ "${GITHUB_REF_NAME#v}" = "$version" ] || { echo "::error::Tag $GITHUB_REF_NAME does not match Cargo.toml version $version"; exit 1; }
+          [ -n "$version" ] && [ "${GITHUB_REF_NAME#v}" = "$version" ] || { echo "::error::Tag $GITHUB_REF_NAME does not match Cargo.toml version ${version:-<none found>}"; exit 1; }
 
       - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
@@ -87,7 +87,7 @@ jobs:
           merge-multiple: true
 
       - name: Generate checksums
-        run: cd artifacts && sha256sum * > SHA256SUMS
+        run: cd artifacts && sha256sum -- * > SHA256SUMS
 
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
@@ -99,6 +99,7 @@ jobs:
           path: artifacts/SHA256SUMS
 
   release:
+    # Gated by attest's release environment approval; this job has no environment of its own
     needs: attest
     runs-on: ubuntu-latest
     timeout-minutes: 10
