@@ -39,17 +39,21 @@ The shared library is written to `target/release/libcomrak_ffi.so` (Linux), `tar
 
 ## Verifying Releases
 
-Each release library has a signed build provenance attestation:
+Each release library has a signed build provenance attestation. Verify it, replacing `<tag>` with the release's tag (e.g. `v0.1.0`):
 
-```
-gh attestation verify <file> --repo oalders/comrak-ffi --signer-workflow oalders/comrak-ffi/.github/workflows/release.yml
+```sh
+gh attestation verify <file> --repo oalders/comrak-ffi \
+  --signer-workflow oalders/comrak-ffi/.github/workflows/release.yml \
+  --source-ref refs/tags/<tag>
 ```
 
 Checksums are published as the `SHA256SUMS` release asset. Download it next to your files and run:
 
-```
+```sh
 sha256sum -c --ignore-missing SHA256SUMS
 ```
+
+Checksums only detect corruption; use `gh attestation verify` to confirm where a file came from.
 
 ## Usage from Perl
 
