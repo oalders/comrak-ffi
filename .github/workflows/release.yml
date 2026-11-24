@@ -27,15 +27,22 @@ jobs:
             artifact: libcomrak_ffi.dylib
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
 
+      - name: Check tag matches Cargo.toml version
+        run: |
+          version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          [ -n "$version" ] && [ "${GITHUB_REF_NAME#v}" = "$version" ] || { echo "::error::Tag $GITHUB_REF_NAME does not match Cargo.toml version ${version:-<none found>}"; exit 1; }
+
       - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
-          toolchain: stable
+          # Pinned so release builds use a known compiler; bump with each Rust release, as std is linked in
+          toolchain: 1.100.0
           targets: ${{ matrix.target }}
 
       - name: Install cross-compilation tools
@@ -43,7 +50,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
-          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
 
       - name: Test
         run: cargo test --locked
@@ -61,9 +68,42 @@ jobs:
           name: ${{ matrix.target }}
           path: target/${{ matrix.target }}/release/${{ matrix.artifact }}.${{ matrix.target }}
 
-  release:
+  attest:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Approval for this environment (required reviewer, v* tags only) is configured in repo settings
+    environment: release
+
+    # Signing rights live here, not in release, which holds contents: write
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: cd artifacts && sha256sum -- * > SHA256SUMS
+
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: artifacts/SHA256SUMS
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: SHA256SUMS
+          path: artifacts/SHA256SUMS
+
+  release:
+    # Gated by attest's release environment approval; this job has no environment of its own
+    needs: attest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     # contents: write lets this job create the release
     permissions:
@@ -75,9 +115,8 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      # gh is preinstalled on the runner, so no third-party action gets contents: write
       - name: Create release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
-        with:
-          generate_release_notes: true
-          files: artifacts/*
-          fail_on_unmatched_files: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" artifacts/* --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
