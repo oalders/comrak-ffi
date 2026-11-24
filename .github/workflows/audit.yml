@@ -1,0 +1,38 @@
+name: Security audit
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  push:
+    branches:
+      - main
+    paths:
+      - Cargo.toml
+      - Cargo.lock
+      - .github/workflows/audit.yml
+  pull_request:
+    paths:
+      - Cargo.toml
+      - Cargo.lock
+      - .github/workflows/audit.yml
+
+permissions: {}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    # issues: write lets scheduled runs open issues for new advisories
+    permissions:
+      contents: read
+      issues: write
+      checks: write
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: rustsec/audit-check@69366f33c96575abad1ee0dba8212993eecbe998 # v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
