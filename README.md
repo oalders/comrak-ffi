@@ -44,10 +44,11 @@ Each release library has a signed build provenance attestation. Verify it, repla
 ```sh
 gh attestation verify <file> --repo oalders/comrak-ffi \
   --signer-workflow oalders/comrak-ffi/.github/workflows/release.yml \
-  --source-ref refs/tags/<tag>
+  --source-ref refs/tags/<tag> \
+  --deny-self-hosted-runners
 ```
 
-Checksums are published as the `SHA256SUMS` release asset. Download it next to your files and run:
+Checksums are published as the `SHA256SUMS` release asset. Download it next to your files and run (on macOS, use `shasum -a 256` in place of `sha256sum`):
 
 ```sh
 sha256sum -c --ignore-missing SHA256SUMS
