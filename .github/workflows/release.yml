@@ -41,7 +41,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
-          # Pinned so re-running a tag rebuilds with the same compiler
+          # Pinned so release builds use a known compiler; bump with each Rust release, as std is linked in
           toolchain: 1.100.0
           targets: ${{ matrix.target }}
 
