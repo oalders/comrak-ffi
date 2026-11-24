@@ -9,4 +9,4 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-comrak = "0.52"
+comrak = { version = "1.2", default-features = false }
