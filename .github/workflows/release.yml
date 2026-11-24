@@ -41,7 +41,8 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
-          toolchain: stable
+          # Pinned so re-running a tag rebuilds with the same compiler
+          toolchain: 1.100.0
           targets: ${{ matrix.target }}
 
       - name: Install cross-compilation tools
@@ -74,7 +75,7 @@ jobs:
     # Approval for this environment (required reviewer, v* tags only) is configured in repo settings
     environment: release
 
-    # Signing rights live here, not in release, so the third-party release action never gets them
+    # Signing rights live here, not in release, which holds contents: write
     permissions:
       contents: read
       id-token: write
@@ -114,9 +115,8 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      # gh is preinstalled on the runner, so no third-party action gets contents: write
       - name: Create release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
-        with:
-          generate_release_notes: true
-          files: artifacts/*
-          fail_on_unmatched_files: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" artifacts/* --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
